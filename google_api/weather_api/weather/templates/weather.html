@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Web Page</title>
+    <style>
+        {% load static %}
+
+        .main {
+            position: absolute;
+            top: 25vh;
+            left: 25vw;
+            width: 50vw;
+            height: 50vh;
+            background-image: url('{% static "images/bgimg.jpg" %}');
+            background-size: cover; /* Adjust size */
+            background-position: center; /* Center the image */
+            background-repeat: no-repeat;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="main" >
+        {% if message %}
+        <p><strong>Sorry..!</strong>{{ message }}</p>
+        {% endif  %}
+
+        {% if current_weather %}
+        <p>Results for <strong>{{ name }}</strong></p>
+        <p><strong>time</strong>{{ current_weather.time }}</p>
+        <p class="weather-symbol">{{ current_weather.symbol }}</p>
+        <p><strong>condition</strong>{{current_weather.description}}</p>
+        <p><strong>temperature</strong>{{ current_weather.temperature }}</p>
+        <p><strong>windspeed</strong>{{ current_weather.windspeed }}</p>
+        <p><strong>Day/Night :</strong>{% if current_weather.is_day %}Day{% else %}Night{% endif %}</p>
+        {% comment %} <p><strong>interval</strong>{{ current_weather.interval }}</p> {% endcomment %}
+        {% comment %} <p><strong>winddirection</strong>{{ current_weather.winddirection }}</p> {% endcomment %}
+        {% comment %} <p><strong>weathercode</strong>{{ current_weather.weathercode }}</p> {% endcomment %}
+        
+        {% endif  %}
+    </div>
+
+</body>
+</html>
