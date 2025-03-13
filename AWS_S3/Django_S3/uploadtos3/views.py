@@ -39,7 +39,7 @@ class read_from_s3(APIView):
         # Save the file locally
         with open("downloaded_file.jpg", "wb") as f:
             f.write(file)
-
+    
         return FileResponse(open("downloaded_file.jpg",'rb'),as_attachment=True)
 
 class compress_file(APIView):
