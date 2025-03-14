@@ -21,15 +21,13 @@ def get_current_weather(city):
     location_url = geocodingapi.format(city)
     try:
         location = requests.get(location_url,timeout=10).json()
+        latitude = location['results'][0]['latitude']
+        longitude = location['results'][0]['longitude']
+        name = location['results'][0]['name']
+        population = location['results'][0]['population']
     except Exception as e:
         print(f"ERROR : {str(e)}")
         return {}
-
-    latitude = location['results'][0]['latitude']
-    longitude = location['results'][0]['longitude']
-    name = location['results'][0]['name']
-    population = location['results'][0]['population']
-
 
     weather_url = weatherapi.format(latitude=latitude,longitude=longitude)
     weather_data = requests.get(weather_url).json()
@@ -54,7 +52,17 @@ def get_current_weather(city):
     return current_weather
 
 def get_temperature(city):
+    try:
+        current_weater = get_current_weather(city)
+        temperature = current_weater.get('temperature',0)
+        return temperature# if temperature is not None else 0
+    except Exception as e:
+        print("Error---",str(e))    
+        
+def get_city_weather(city):
     current_weater = get_current_weather(city)
+    name = current_weater.get('name')
+    temperature = current_weater.get('temperature')
     
-    return current_weater.get('temperature')
+    return (name,float(temperature)) if name is not None else (city,0)
     

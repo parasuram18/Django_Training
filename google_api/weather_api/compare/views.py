@@ -84,18 +84,29 @@ class compare_cities(APIView):
 class temp_graph(APIView):
     def get(self,request):
         try:
-            cities_list = request.query_params.get('cities')
-            cities = cities_list.split(',')
-            
+            data = request.query_params.get('cities')
+            cities = data.split(',')
             x_axis = [x for x in range(len(cities))]
+            bar_width = 0.2
             
-            temperatures = [functions.get_temperature(city) for city in cities]
+            # temperatures = [float(functions.get_temperature(city)) for city in cities]
             
-            plt.bar(x=x_axis,height=temperatures,bottom=0,width=0.2)
-            plt.xticks(x_axis,cities)
+            details = [functions.get_city_weather(city) for city in cities]
+            
+            city_names = [city for city,temp in details]
+            temperatures = [temp for city,temp in details]
+            
+            plt.figure(figsize=(12,8))
+            plt.bar(x=x_axis,height=temperatures,bottom=0,width=bar_width)
+            
+            plt.xticks(x_axis,city_names)
             plt.xlabel('Cities')
-            plt.ylabel('Temperature')
+            plt.ylabel('Temperature in °C')
+            plt.ylim(0, max(temperatures) + 5)
             plt.title("Temperature Bar Graph")
+
+            for x,y in enumerate(temperatures):
+                plt.text(x-bar_width/2,y+1,str(y))
                         
             output = io.BytesIO()
             plt.savefig(output,format='jpg')
