@@ -2,7 +2,7 @@ from django.shortcuts import render
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from . import functions
+from . import weatherfunctions
 # Create your views here.
 
 
@@ -17,7 +17,7 @@ class get_weather(APIView):
         except:
             city = "tenkasi"
         
-        current_weather = functions.get_current_weather(city)
+        current_weather = weatherfunctions.get_current_weather(city)
         
         if not current_weather:
             context['message'] = "no city found"

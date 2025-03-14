@@ -3,14 +3,21 @@ from django.http import FileResponse,HttpResponse
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from weather import functions
+from weather import weatherfunctions
 import matplotlib
 matplotlib.use('Agg') 
 import matplotlib.pyplot as plt
 import plotly.express as px
-import io
+import io,time,threading
 # Create your views here.
 import numpy as np
+
+results ={}
+
+def get_weather(city):
+    data = weatherfunctions.get_current_weather(city)
+    results[data['name']]=data
+
 
 
 class pie_chart(APIView):
@@ -20,8 +27,8 @@ class pie_chart(APIView):
             city1 = data.get("city1")
             city2 = data.get("city2")
             cities = [city1,city2]
-            weather_1 = functions.get_current_weather(city1)
-            weather_2 = functions.get_current_weather(city2)
+            weather_1 = weatherfunctions.get_current_weather(city1)
+            weather_2 = weatherfunctions.get_current_weather(city2)
             
             values = [weather_1['temperature'],weather_2['temperature']]
             plt.pie(values,labels=cities,autopct='%1.1f%%',startangle=90,)
@@ -45,8 +52,8 @@ class compare_cities(APIView):
             city2 = data.get('city2')
             print(">>")
             
-            weather_1 = functions.get_current_weather(city1)
-            weather_2 = functions.get_current_weather(city2)
+            weather_1 = weatherfunctions.get_current_weather(city1)
+            weather_2 = weatherfunctions.get_current_weather(city2)
             
             data = [weather_1,weather_2]
             
@@ -84,14 +91,31 @@ class compare_cities(APIView):
 class temp_graph(APIView):
     def get(self,request):
         try:
+            
+            
+            start = time.time()
+            
             data = request.query_params.get('cities')
             cities = data.split(',')
             x_axis = [x for x in range(len(cities))]
             bar_width = 0.2
             
-            # temperatures = [float(functions.get_temperature(city)) for city in cities]
+            # temperatures = [float(weatherfunctions.get_temperature(city)) for city in cities]
             
-            details = [functions.get_city_weather(city) for city in cities]
+            # weather_data = weatherfunctions.get_current_weather('tenkasi')
+            # print(weather_data)
+            
+            # thread = threading.Thread(target=weatherfunctions.get_current_weather,args=('tenkasi',))
+            # thread.start()
+            
+            
+            # threads = [ threading.Thread(target=get_weather,args=(city,)) for city in cities]
+            # for thread in threads:
+            #     thread.start()
+            
+            
+            
+            details = [weatherfunctions.get_city_weather(city) for city in cities]
             
             city_names = [city for city,temp in details]
             temperatures = [temp for city,temp in details]
@@ -112,6 +136,13 @@ class temp_graph(APIView):
             plt.savefig(output,format='jpg')
             plt.close()
             output.seek(0)
+            
+            # for thread in threads:
+            # thread.join()
+            # print(thread)
+            
+            print(">>>>>>",time.time()-start)
+            
             return FileResponse(output,as_attachment=True,filename="temp_bar.png")                        
 
         except Exception as e:
