@@ -91,8 +91,6 @@ class compare_cities(APIView):
 class temp_graph(APIView):
     def get(self,request):
         try:
-            
-            
             start = time.time()
             
             data = request.query_params.get('cities')
