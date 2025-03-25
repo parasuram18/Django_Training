@@ -36,6 +36,7 @@ def mail(request):
     except Exception as e:
         return Response({'status':'Error','message':str(e)},status=status.HTTP_400_BAD_REQUEST)
     
+# get all periotic tasks from celery-beat models 
 @api_view(['GET'])
 def get_all_tasks(request):
 
@@ -50,6 +51,7 @@ def get_all_tasks(request):
     
     return Response({'status':'success','tasks':task_details},status=status.HTTP_200_OK)
     
+# deactivate tasks by task id --> change "enabled" to false
 @api_view(['GET'])
 def deactive_tasks(request):
 
@@ -60,24 +62,28 @@ def deactive_tasks(request):
 
     return Response({'status':'success','message':'Tasks deactivated ','data':data},status=status.HTTP_200_OK)
    
+# shedule new intervel task 
 @api_view(['POST'])
 def intervel_task(request):
     
     to_mail = request.data.get('to_mail')
-
+    # create a new schedule time in IntervalSchedule model 
     interval, created = IntervalSchedule.objects.get_or_create(every=1, period=IntervalSchedule.MINUTES)
+    # asign a task with interval obj as a foreign key
     PeriodicTask.objects.get_or_create(name='send_mail_at_every_1_minute',
                                        task='celery_test.tasks.send_mail_to',
                                        args=json.dumps([to_mail]),
                                        interval=interval)
     return Response({'status':'success','message':'task started succesfully'},status=status.HTTP_200_OK)
 
+# shedule new crontab task 
 @api_view(['POST'])
 def crontab_task(request):
     
     to_mail = request.data.get('to_mail')
-
+    # create a new schedule time in ContrabSchedule model 
     crontab, created = CrontabSchedule.objects.get_or_create(hour="15",minute="30", timezone='Asia/Kolkata')
+    # asign a task with crontab obj as a foreign key
     PeriodicTask.objects.get_or_create(name='send_mail_at_every_eve',
                                        task='celery_test.tasks.send_mail_to',
                                        args=json.dumps([to_mail]),
