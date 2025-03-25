@@ -5,6 +5,9 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 import time
+import json
+from django_celery_beat.models import PeriodicTask,IntervalSchedule,CrontabSchedule,SolarSchedule,ClockedSchedule
+from django.utils.timezone import now, timedelta
 # Create your views here.
 
 @api_view(['POST'])
@@ -13,10 +16,8 @@ def task(request):
         start = time.time()
         result = add.delay(3,5)
         print(result.get())
-        # result = add.apply_async(args=(3,5),task_id='add')
         end = time.time()
         
-        # return Response({'message':'success',"Task id": result.id,"Task result": result.get(), 'time':end-start},status=status.HTTP_200_OK)
         return Response({'message':'success',"Task id": result.id,'time':end-start},status=status.HTTP_200_OK)
     except Exception as e:
         return Response({'status':'Error','message':str(e)},status=status.HTTP_400_BAD_REQUEST)
@@ -34,3 +35,58 @@ def mail(request):
         return Response({'status':'success',"Task id": result.id,'message':'Mail sent succesfully','time':end-start},status=status.HTTP_200_OK)
     except Exception as e:
         return Response({'status':'Error','message':str(e)},status=status.HTTP_400_BAD_REQUEST)
+    
+@api_view(['GET'])
+def get_all_tasks(request):
+
+    tasks = PeriodicTask.objects.all().exclude(name="celery.backend_cleanup")
+    task_details = [
+        {
+        "task_id":task.id,
+        "task_name":task.name,
+        "is_active":task.enabled
+        } 
+        for task in tasks]
+    
+    return Response({'status':'success','tasks':task_details},status=status.HTTP_200_OK)
+    
+@api_view(['GET'])
+def deactive_tasks(request):
+
+    data = request.query_params.getlist('id')
+
+    for id in data:
+        PeriodicTask.objects.filter(id=id).update(enabled=False)
+
+    return Response({'status':'success','message':'Tasks deactivated ','data':data},status=status.HTTP_200_OK)
+   
+@api_view(['POST'])
+def intervel_task(request):
+    
+    to_mail = request.data.get('to_mail')
+
+    interval, created = IntervalSchedule.objects.get_or_create(every=1, period=IntervalSchedule.MINUTES)
+    PeriodicTask.objects.get_or_create(name='send_mail_at_every_1_minute',
+                                       task='celery_test.tasks.send_mail_to',
+                                       args=json.dumps([to_mail]),
+                                       interval=interval)
+    return Response({'status':'success','message':'task started succesfully'},status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+def crontab_task(request):
+    
+    to_mail = request.data.get('to_mail')
+
+    crontab, created = CrontabSchedule.objects.get_or_create(hour="15",minute="30", timezone='Asia/Kolkata')
+    PeriodicTask.objects.get_or_create(name='send_mail_at_every_eve',
+                                       task='celery_test.tasks.send_mail_to',
+                                       args=json.dumps([to_mail]),
+                                       crontab=crontab)
+
+    return Response({'status':'success','message':'tasks started succesfully'},status=status.HTTP_200_OK)
+
+
+# interval, created = IntervalSchedule.objects.get_or_create(every=1, period=IntervalSchedule.MINUTES)
+# crontab, created = CrontabSchedule.objects.get_or_create(hour="15",minute="30", timezone='Asia/Kolkata')
+# clock, created = ClockedSchedule.objects.get_or_create(clocked_time=now()+timedelta(minutes=5))
+# solar, created = SolarSchedule.objects.get_or_create(event='sunrise', latitude=11.1271, longitude=78.6569)

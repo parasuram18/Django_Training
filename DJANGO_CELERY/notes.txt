@@ -1,0 +1,76 @@
+
+                Celery Beat  --->  Redis (Broker)  --->  Celery Worker  --->  Executes Task
+                ⬆️                      ⬇️  
+                Stores Schedule       Stores Task Queue
+
+                        --------------types of workers--------------
+Python scripts - asigned for files having tasks
+Django projects - asigned for Project name
+
+1. Prefork (default):
+    "celery -A <myapp> worker --loglevel=info --concurrency=4"
+    good for CPU and I/O bound tasks (e.g., image processing, data science...)
+2. Threads :
+    "celery -A <myapp> worker --loglevel=info -P threads"
+    Suitable for I/O-bound tasks (e.g., network requests, database queries).
+    Special for SMTP actions 
+3. Eventlet :
+    pip install eventlet
+    "celery -A <myapp> worker --loglevel=info -P eventlet"
+    effectively handle multiple tasks 
+4. Gevent :
+    pip install gevent
+    "celery -A <myapp> worker --loglevel=info -P gevent"
+    good for I/O bound tasks & asyncronous task execution 
+    (e.g., chat applications, microservices)
+5. solo :
+    "celery -A <myapp> worker --loglevel=info -P solo"
+    syncrorous execution - one task per time
+
+
+                        --------------Periotic task execution--------------
+
+1. Normal python scripts
+    celery beat check tasks for every 5 minutes ,tasks are stored in in-memory 
+    so beat must be run in before 5 minutes
+
+    app.conf.beat_schedule = {
+        task_name : {
+            "task":"tasl location",
+            "schedule":["timedelta","crontab(day, hour, minute)"],
+            "args":"list of args"
+        }
+    }
+
+2. in django projects :
+ 
+    use DJANGO-CELERY-BEAT  pip install django-celery-beat
+    celery-beat check enabled tasks in db for each 5 SECONDS
+
+    settings configuration ---> CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers.DatabaseScheduler"
+
+    it has 5 inbuilt models to store periotic tasks,
+    -> PeriodicTask : ()
+
+    -> IntervalSchedule : (SECONDS MINUTES HOURS DAYS WEEKS)
+        it stores the time intervel of task to be run like loops
+        "interval, created = IntervalSchedule.objects.get_or_create(every=1, period=IntervalSchedule.MINUTES)"
+
+    -> CrontabSchedule : (minute, hour, day_of_week, day_of_month, month_of_year) , * means all
+        also like intervelschedule but gives more flexibility
+        it stores the time period for tasks that runs repeatedly over days,months,years
+        minute, hour -> str types
+        "crontab, created = CrontabSchedule.objects.get_or_create(hour="15",minute="30", timezone='Asia/Kolkata')"
+
+    -> SolarSchedule : (event, latitude, longitude)
+        it allows tasks to run at "sunrise, sunset"  at a particular location
+        "solar, created = SolarSchedule.objects.get_or_create(event='sunrise', latitude=11.1271, longitude=78.6569)"
+
+    -> ClockedSchedule : (clocked_time)
+        scheduling a task to run once at a specific time.
+        datetime field - use now, timedelta
+        "clock, created = ClockedSchedule.objects.get_or_create(clocked_time=now()+timedelta(minutes=5))"
+
+    
+
+

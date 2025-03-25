@@ -5,6 +5,8 @@ from email.mime.text import MIMEText
 import eventlet, time
 from datetime import datetime, timedelta
 from celery.schedules import crontab
+
+
 app = Celery(
     'email_task',
     broker= 'redis://127.0.0.1:6379/0',
@@ -69,19 +71,20 @@ def send_mail__to_multi_users(reciever_list):
         result[to_mail]=f"mail sent to {name} succesfully"
     return result
 
-
-# app.conf.beat_schedule = {
-#     "run_every_60_seconds":{
-#         'task':'email_task.send_mail',
-#         'schedule':timedelta(seconds=1),
-#         'args':['Krishnakuamri.g@medyaan.com',]
-#     }
-# }
-
 app.conf.beat_schedule = {
     "run_every_60_seconds":{
         'task':'email_task.send_mail',
-        'schedule':crontab(),
-        'args':['parasuram.k@datayaan.com',]
+        'schedule':timedelta(seconds=1),
+        'args':['Krishnakuamri.g@medyaan.com',]
     }
 }
+# app.conf.timezone = 'Asia/Kolkata'  # Set the correct timezone
+# # app.conf.timezone = 'UTC'
+
+# app.conf.beat_schedule = {
+#     "send_daily_email":{
+#         'task':'email_task.send_mail',
+#         'schedule':crontab(hour=19, minute=3),
+#         'args':['parasuram.k@datayaan.com',]
+#     }
+# }

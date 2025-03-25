@@ -1,8 +1,22 @@
-from datetime import datetime,timedelta
-to_mail = 'parasuram.k@datayaan.com'
-name = to_mail.split('@')[0]
-print(name)
+def romanToInt() -> int:
+    a={'I':1,
+       'V'  :5,
+       'X'  :10,
+       'L'  :50,
+       'C'  :100,
+       'D'  :500,
+       'M'  :1000,
+    }
 
-date = datetime(2025, 3, 24,11,5)
-print(date)
-print(datetime.utcnow()+timedelta(minutes=2))
+    s = "III"
+    output = a[s[-1]]
+    for i in range(len(s)-1,0,-1):
+        let = s[i]
+        bef = s[i-1]
+        if a[bef]<output:
+            output-=a[bef]
+        else:
+            output+=a[bef]
+    return output
+ans = romanToInt()
+print(ans)

@@ -1,4 +1,4 @@
-from email_task import send_mail,send_mail__to_multi_users
+from email_task import send_mail,send_mail__to_multi_users, every_60
 from celery import Celery
 from datetime import datetime, timedelta
 reciever_list = ['parasuram.k@datayaan.com',
@@ -10,6 +10,6 @@ reciever_list = ['parasuram.k@datayaan.com',
 
 # for to_mail in reciever_list:
 #     task = send_mail.apply_async(args=(to_mail,),
-#                                  task_id=f'send mail to {to_mail}',
-#                                  eta=datetime.utcnow()+timedelta(minutes=2))    
+#                                  task_id=f'send mail to {to_mail}',)
+#                                 #  eta=datetime.utcnow()+timedelta(minutes=2)    
 #     print(">>>>>",task.id)

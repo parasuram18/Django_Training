@@ -10,11 +10,18 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
-import os
+import os, json
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ENV_FILE = os.path.join(BASE_DIR, "env.json")
 
+try:
+    f= open(ENV_FILE,'r')
+    env_data = json.load(f)
+except FileNotFoundError:
+    print("Error: env.json file not found!")
+    env_data = {}
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
@@ -39,6 +46,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'celery_test',
     'celery',
+    'django_celery_beat'
 ]
 
 MIDDLEWARE = [
@@ -77,8 +85,12 @@ WSGI_APPLICATION = 'main.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': "django.db.backends.postgresql",
+        'NAME': env_data['DB_NAME'],
+        'USER': env_data['DB_USER'],
+        'PASSWORD': env_data['DB_PASSWORD'],
+        'HOST': env_data['DB_HOST'],
+        'PORT': env_data['DB_PORT'],
     }
 }
 
@@ -127,6 +139,8 @@ CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
 CELERY_TIMEZONE = 'UTC'
 CELERT_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
+
+CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers.DatabaseScheduler"
 
 # broker_connection_retry_on_startup = True
 
