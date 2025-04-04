@@ -1,0 +1,117 @@
+
+
+                    _______________________logging.basicConfig()________________________________
+
+logger = logging.getLogger(__name__)
+
+logger.setLevel(logging.DEBUG)
+
+console_handler = logging.StreamHandler()
+console_handler.setLevel(level=logging.DEBUG)
+con_format = logging.Formatter("%(levelname)s: %(message)s")
+console_handler.setFormatter(con_format)
+
+file_handler = logging.FileHandler(filename='app.log', mode='w')
+file_handler.setLevel(logging.WARNING)
+file_format = logging.Formatter("%(asctime)s - %(name)s at line %(lineno)d - %(levelname)s: %(message)s")
+file_format = logging.Formatter("""
+                                time       - %(asctime)s 
+                                filename   - %(filename)s %(module)s
+                                funcname   - %(funcName)s
+                                at line    - %(lineno)d 
+                                loglevel   - %(levelname)s %(levelno)d
+                                logmessage - %(message)s
+                                pathname - %(pathname)s
+                                """)
+file_handler.setFormatter(file_format)
+
+
+logger.addHandler(console_handler)
+logger.addHandler(file_handler)
+
+
+                    _______________________logging.dictConfig()________________________________
+
+                    use traceback to get correct error number and send it with error log message
+
+
+LOGGING = {
+    "version":1,    # allowed version of dictionary config method
+    "disable_existing_loggers":True,    # disable all previous loggers if exists
+
+# log message format
+    "formatters":{
+                    <---        time       - %(asctime)s 
+                                filename   - %(filename)s %(module)s
+                                funcname   - %(funcName)s
+                                at line    - %(lineno)d 
+                                loglevel   - %(levelname)s %(levelno)d
+                                logmessage - %(message)s
+                                pathname - %(pathname)s
+                                thread_id - %(thread)s
+                                thread_name - %(threadname)s
+                                task_name - %(taskname)s       ---->
+        "console":{
+            "format":"%(asctime)s - %(levelname)s: %(message)s",
+            "style":"%"
+        },
+        "file":{
+            "format":"%(asctime)s - %(pathname)s - %(levelname)s - %(message)s",
+            "style":"%"
+        }
+    },
+
+# switching loggers between development server & production server
+    "filters":{
+        "require_debug_true":{
+            "()":"django.utils.log.RequireDebugTrue"
+        },
+        "require_debug_false":{
+            "()":"django.utils.log.RequireDebugFalse"
+        }
+    },
+
+# type of handlers stream-console, file, rotating_file, time_rotating_file, email, Syslog, Database  
+    "handlers":{
+        "console":{
+            "level":"DEBUG",
+            "class":"logging.StreamHandler",
+            "formatter":"console",
+            "filters":["require_debug_true"]
+        },
+        "file":{
+            "level":"DEBUG",
+            "class":"logging.FileHandler",
+            "filename":"logs/file.log",
+            "formatter":"file",
+            "filters":["require_debug_true"]
+        },
+        "rotating_file":{
+            "level":"DEBUG",
+            "class":"logging.handlers.RotatingFileHandler",
+            "filename":"logs/rotating.log",
+            "maxBytes":2*1024,
+            "backupCount":2,
+            "formatter":"console",
+            "filters":["require_debug_false"]
+        },
+        "timed_rotating_file":{
+            "level":"INFO",
+            "class":"logging.handlers.TimedRotatingFileHandler",
+            "filename":"logs/time_file.log",
+            "when":"M",
+            "interval":2,
+            "backupCount":2,
+            "formatter":"file",
+            "filters":["require_debug_false"]
+        }
+    },
+    "loggers":{
+        "pylog.views":{
+            "handlers":["file", "rotating_file", "timed_rotating_file"],
+            "level":"DEBUG",
+            "propagate":True
+        }
+    }
+}
+

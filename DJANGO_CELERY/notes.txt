@@ -43,8 +43,9 @@ Django projects - asigned for Project name
     }
 
 2. in django projects :
- 
+    
     use DJANGO-CELERY-BEAT  pip install django-celery-beat
+    we can asign tasks using Django-Admin
     celery-beat check enabled tasks in db for each 5 SECONDS
 
     settings configuration ---> CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers.DatabaseScheduler"

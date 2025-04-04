@@ -75,7 +75,7 @@ app.conf.beat_schedule = {
     "run_every_60_seconds":{
         'task':'email_task.send_mail',
         'schedule':timedelta(seconds=1),
-        'args':['Krishnakuamri.g@medyaan.com',]
+        'args':['parasuram.k@datayaan.com',]
     }
 }
 # app.conf.timezone = 'Asia/Kolkata'  # Set the correct timezone
