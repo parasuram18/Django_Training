@@ -1,0 +1,89 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Video Call</title>
+    <script src="https://sdk.twilio.com/js/video/releases/2.24.0/twilio-video.min.js"></script>
+</head>
+<body>
+    {% if token %}
+        
+        <h3>Local Video</h3>
+        <div id="local-video"></div>
+        
+        <h3>Remote Video</h3>
+        <div id="remote-video"></div>
+        
+        <!-- Optional Controls -->
+        <button onclick="toggleAudio()">Mute/Unmute Audio</button>
+        <button onclick="toggleVideo()">Enable/Disable Video</button>
+        
+
+        <script>
+            const token = "{{ token|safe }}";
+            const roomName = "{{ room }}";
+          
+            let localAudioTrack;
+            let localVideoTrack;
+            
+            Twilio.Video.connect(token, {
+              name: roomName,
+              audio: true,
+              video: true
+            }).then(room => {
+              console.log(`Connected to room: ${room.name}`);
+            
+              // LOCAL VIDEO
+              room.localParticipant.tracks.forEach(publication => {
+                const track = publication.track;
+            
+                if (track.kind === 'audio') localAudioTrack = track;
+                if (track.kind === 'video') localVideoTrack = track;
+            
+                document.getElementById('local-video').appendChild(track.attach());
+              });
+            
+              // REMOTE PARTICIPANT JOINED
+              room.on('participantConnected', participant => {
+                console.log(`Remote participant "${participant.identity}" connected`);
+            
+                participant.tracks.forEach(publication => {
+                  if (publication.isSubscribed) {
+                    const track = publication.track;
+                    document.getElementById('remote-video').appendChild(track.attach());
+                  }
+                });
+            
+                participant.on('trackSubscribed', track => {
+                  document.getElementById('remote-video').appendChild(track.attach());
+                });
+              });
+            
+            }).catch(error => {
+              console.error("Failed to connect:", error);
+            });
+
+            function toggleAudio() {
+                if (localAudioTrack) {
+                  localAudioTrack.isEnabled ? localAudioTrack.disable() : localAudioTrack.enable();
+                }
+              }
+              
+              function toggleVideo() {
+                if (localVideoTrack) {
+                  localVideoTrack.isEnabled ? localVideoTrack.disable() : localVideoTrack.enable();
+                }
+              }
+              
+
+          </script>
+          
+    {% else %}
+        <form method="get">
+            <label for="identity">Enter your name:</label>
+            <input type="text" name="identity" id="identity" required>
+            <button type="submit">Join Call</button>
+        </form>
+    {% endif %}
+</body>
+</html>

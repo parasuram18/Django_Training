@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Twilio Video Chat</title>
+  <script src="https://media.twiliocdn.com/sdk/js/video/releases/2.18.1/twilio-video.min.js"></script>
+</head>
+<body>
+  <h2>Video Chat Room</h2>
+  <input type="text" id="identity" placeholder="Enter your name">
+  <button onclick="joinRoom()">Join Room</button>
+
+  <div>
+    <h3>Local Video</h3>
+    <div id="local-media"></div>
+
+    <h3>Remote Participants</h3>
+    <div id="remote-media"></div>
+  </div>
+
+  <script>
+    async function joinRoom() {
+      const identity = document.getElementById("identity").value;
+
+      const res = await fetch(`/generate-token/?identity=${identity}`);
+      const data = await res.json();
+
+      Twilio.Video.connect(data.token, {
+        name: "TestRoom",
+        audio: true,
+        video: { width: 640 }
+      }).then(room => {
+        console.log(`Connected to Room: ${room.name}`);
+
+        // Attach local video
+        room.localParticipant.videoTracks.forEach(publication => {
+          const track = publication.track;
+          document.getElementById('local-media').appendChild(track.attach());
+        });
+
+        // Attach remote participant tracks
+        room.on('participantConnected', participant => {
+          console.log(`Participant "${participant.identity}" connected`);
+
+          participant.on('trackSubscribed', track => {
+            document.getElementById('remote-media').appendChild(track.attach());
+          });
+        });
+      });
+    }
+  </script>
+</body>
+</html>

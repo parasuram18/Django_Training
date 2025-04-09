@@ -8,13 +8,12 @@ import logging
 import traceback
 # Create your views here.
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('mylogger')
  
 @api_view(['POST'])
 def sample(request):
     try:
         data = request.data.get('data')
-
         if not data:
             return Response({'message':'no data recieved'},status=status.HTTP_200_OK)
         # print(1/0)

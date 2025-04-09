@@ -1,0 +1,19 @@
+    <script src="https://sdk.twilio.com/js/video/releases/2.24.0/twilio-video.min.js"></script>
+
+<body>
+    <div id="local-video"></div>
+    <div id="remote-video"></div>
+<script>
+    Twilio.Video.connect("{{ token }}", {
+        name: "{{ room_name }}",
+        audio: true,
+        video: true
+    }).then(room => {
+        console.log("Connected to", room.name);
+    });
+    Twilio.Video.createLocalVideoTrack().then(track => {
+        const videoElement = track.attach();
+        document.getElementById('local-video').appendChild(videoElement);
+    });
+</script>
+</body>

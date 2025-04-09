@@ -1,0 +1,45 @@
+<!-- video_call.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Video Call</title>
+    <script src="https://sdk.twilio.com/js/video/releases/2.24.0/twilio-video.min.js"></script>
+</head>
+<body>
+    {% if token %}
+        <h3>Welcome {{ identity }}</h3>
+        <p>Joining room: <strong>{{ room }}</strong></p>
+        <div id="video-container"></div>
+
+        <script>
+            const token = "{{ token|safe }}";
+            const roomName = "{{ room }}";
+
+            Twilio.Video.connect(token, {
+                name: roomName,
+                video: true,
+                audio: true
+            }).then(room => {
+                console.log("Connected to room:", room.name);
+                room.localParticipant.tracks.forEach(publication => {
+                    const track = publication.track;
+                    document.getElementById("video-container").appendChild(track.attach());
+                });
+
+                room.localParticipant.on('trackPublished', publication => {
+                    const track = publication.track;
+                    document.getElementById("video-container").appendChild(track.attach());
+                });
+            }).catch(error => {
+                console.error("Error connecting to Twilio:", error);
+            });
+        </script>
+    {% else %}
+        <form method="get">
+            <label for="identity">Enter your name:</label>
+            <input type="text" name="identity" id="identity" required>
+            <button type="submit">Join Call</button>
+        </form>
+    {% endif %}
+</body>
+</html>

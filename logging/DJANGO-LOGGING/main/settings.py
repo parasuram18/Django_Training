@@ -198,7 +198,7 @@ LOGGING = {
         },
     },
     "loggers":{
-        "pylog.views":{
+        "mylogger":{
             "handlers":["timed_rotating_file"],
             "level":"ERROR",
             "propagate":True
