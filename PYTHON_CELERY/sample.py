@@ -19,4 +19,10 @@ def romanToInt() -> int:
             output+=a[bef]
     return output
 ans = romanToInt()
-print(ans)
+# print(ans)
+
+
+list1 = [1,2,4]
+list2 = [1,3,4]
+
+list3 = sorted(list1+list2)
