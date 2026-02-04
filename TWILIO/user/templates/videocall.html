@@ -1,0 +1,112 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Video Consultation</title>
+  <script src="https://media.twiliocdn.com/sdk/js/video/releases/2.25.0/twilio-video.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #f8f9fa;
+    }
+    #videos {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+    #local-video, #remote-video {
+      width: 45%;
+      background: #000;
+      margin: 10px;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    video {
+      width: 100%;
+      height: auto;
+      border-radius: 10px;
+    }
+    button {
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <h2>🎥 Video Consultation</h2>
+  <div id="videos">
+    <div id="local-video"></div>
+    <div id="remote-video"></div>
+  </div>
+  <button onclick="startVideoCall()">Join Call</button>
+ 
+  <script>
+    async function startVideoCall() {
+      try {
+
+        
+        const token = "{{ token|safe }}";
+        const roomName = "{{ room }}";
+        console.log("✅ Token to room:", token);
+        console.log("✅ Room Name:", roomName);
+ 
+        // ✅ 2️⃣ Connect to Twilio Video room
+        const room = await Twilio.Video.connect(token, {
+          name: "alumni-room",
+          audio: true,
+          video: true
+        });
+        console.log("✅ Connected to room:", room.name);
+ 
+        // ✅ 3️⃣ Show local video safely
+        const localContainer = document.getElementById('local-video');
+        try {
+          const localTrack = await Twilio.Video.createLocalVideoTrack();
+          localContainer.appendChild(localTrack.attach());
+        } catch (error) {
+          console.warn("No camera found or permission denied:", error);
+        }
+ 
+        // ✅ 4️⃣ Show remote participants
+        const remoteContainer = document.getElementById('remote-video');
+        room.participants.forEach(participantConnected);
+ 
+        room.on('participantConnected', participantConnected);
+ 
+        function participantConnected(participant) {
+          participant.tracks.forEach(publication => {
+            if (publication.isSubscribed) {
+              const track = publication.track;
+              remoteContainer.appendChild(track.attach());
+            }
+          });
+ 
+          participant.on('trackSubscribed', track => {
+            remoteContainer.appendChild(track.attach());
+          });
+        }
+ 
+        // ✅ 5️⃣ Handle participant disconnected
+        room.on('participantDisconnected', participant => {
+          console.log("Participant disconnected:", participant.identity);
+        });
+      } catch (err) {
+        console.error("❌ Error starting video call:", err);
+        alert("Unable to start video. Please check camera/mic permissions or Twilio credentials.");
+      }
+    }
+  </script>
+</body>
+</html>
+ 
